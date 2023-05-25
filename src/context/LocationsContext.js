@@ -9,6 +9,7 @@ export const LocationsContext = createContext({});
 export function LocationsContextProvider(props) {
 
   const [currentLocation, setCurrentLocation] = useState([])
+  const [selectedLocation, setSelectedLocation] = useState(null)
 
   const [LocationsList, setLocationsList] = useState([])
 
@@ -90,6 +91,7 @@ export function LocationsContextProvider(props) {
         deleteLocationAlarm,
         currentLocation, setCurrentLocation,
         getCurrentLocation,
+        selectedLocation, setSelectedLocation,
       }}
     >
       {props.children}

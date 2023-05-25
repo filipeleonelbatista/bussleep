@@ -1,10 +1,11 @@
 import { Box, Button, HStack, Text } from 'native-base';
 import { useLocations } from '../hooks/useLocations';
 import MapView, { Circle, Marker } from 'react-native-maps';
+import { useNavigation } from '@react-navigation/native';
 
 export default function AlarmItem({ item, ...props }) {
-  const { deleteLocationAlarm } = useLocations();
-  console.log("ITEM", item)
+  const navigation = useNavigation();
+  const { deleteLocationAlarm, setSelectedLocation } = useLocations();
   return (
     <Box
       {...props}
@@ -67,7 +68,12 @@ export default function AlarmItem({ item, ...props }) {
           _pressed={{ bg: 'green.600' }}
           _text={{ fontSize: 18, color: 'green.500' }}
           variant={"outline"}
-          width={"50%"}>
+          width={"50%"}
+          onPress={() => {
+            setSelectedLocation(item)
+            navigation.navigate("AlarmScreen")
+          }}
+        >
           Ativar
         </Button>
         <Button
