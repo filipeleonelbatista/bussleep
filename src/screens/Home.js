@@ -3,10 +3,13 @@ import { Feather } from '@expo/vector-icons';
 import { useWindowDimensions } from 'react-native';
 import EmptyMessage from '../components/EmptyMessage';
 import { useNavigation } from '@react-navigation/native';
+import { useLocations } from '../hooks/useLocations';
+import AlarmItem from '../components/AlarmItem';
 
 export default function Home() {
   const { width, height } = useWindowDimensions();
   const navigation = useNavigation();
+  const { LocationsList } = useLocations();
 
   return (
     <VStack
@@ -42,37 +45,16 @@ export default function Home() {
         paddingHorizontal={16}
         paddingVertical={16}
       >
-        {/* <EmptyMessage /> */}
-        <Box
-          margin={2}
-          borderRadius={8}
-          shadow={4}
-          bgColor={"white"}
-        >
-          <Box
-            borderTopLeftRadius={8}
-            borderTopRightRadius={8}
-            width={"100%"}
-            height={130}
-            bgColor={"gray.400"}
-          ></Box>
-          <HStack>
-            <Button
-              _pressed={{ bg: 'green.600' }}
-              _text={{ fontSize: 18, color: 'green.500' }}
-              variant={"outline"}
-              width={"50%"}>
-              Ativar
-            </Button>
-            <Button
-              _pressed={{ bg: 'red.600' }}
-              _text={{ fontSize: 18, color: 'red.400' }}
-              variant={"outline"}
-              width={"50%"}>
-              Excluir
-            </Button>
-          </HStack>
-        </Box>
+        {
+          console.log("LocationsList", LocationsList)
+        }
+
+        {
+          LocationsList.length === 0 ? <EmptyMessage /> : (
+            LocationsList.map((item, index) => (<AlarmItem key={index} item={item} />))
+          )
+        }
+
 
       </ScrollView>
       <Button
