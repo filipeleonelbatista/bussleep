@@ -1,12 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Audio } from "expo-av";
+import * as Location from 'expo-location';
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import { Alert, ToastAndroid } from "react-native";
 import uuid from 'react-native-uuid';
-import * as Location from 'expo-location';
+import mySound from '../assets/alert.mp3';
 
 export const LocationsContext = createContext({});
 
 export function LocationsContextProvider(props) {
+  const [selectedAudio, setSelectedAudio] = useState(null)
 
   const [currentLocation, setCurrentLocation] = useState([])
   const [selectedLocation, setSelectedLocation] = useState(null)
@@ -62,6 +65,10 @@ export function LocationsContextProvider(props) {
       } else {
         await AsyncStorage.setItem('locations', JSON.stringify([]))
       }
+
+      const { sound } = await Audio.Sound.createAsync(mySound, { isLoping: true });
+      setSelectedAudio(sound);
+
     } catch (error) {
       console.log(error)
     }
@@ -83,6 +90,16 @@ export function LocationsContextProvider(props) {
     getCurrentLocation();
   }, [loadData, getCurrentLocation]);
 
+  useEffect(() => {
+    Location.watchPositionAsync({
+      accuracy: Location.LocationAccuracy.Highest,
+      timeInterval: 1000,
+      distanceInterval: 1
+    }, (response) => {
+      setCurrentLocation(response)
+    })
+  }, [])
+
   return (
     <LocationsContext.Provider
       value={{
@@ -91,7 +108,7 @@ export function LocationsContextProvider(props) {
         deleteLocationAlarm,
         currentLocation, setCurrentLocation,
         getCurrentLocation,
-        selectedLocation, setSelectedLocation,
+        selectedLocation, setSelectedLocation, selectedAudio
       }}
     >
       {props.children}

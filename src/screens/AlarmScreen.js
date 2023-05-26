@@ -1,17 +1,18 @@
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import * as Location from 'expo-location';
+import { getDistance } from 'geolib';
 import { Box, Button, HStack, VStack } from 'native-base';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, ToastAndroid, useWindowDimensions } from 'react-native';
 import MapView, { Circle, Marker } from 'react-native-maps';
 import { useLocations } from '../hooks/useLocations';
-import { useEffect } from 'react';
 
 export default function AlarmScreen() {
   const { width, height } = useWindowDimensions();
   const navigation = useNavigation();
 
-  const { selectedLocation } = useLocations();
+  const { selectedLocation, currentLocation, selectedAudio } = useLocations();
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const handleDisabledAlarm = () => {
     Alert.alert("Deseja desativar este alarme?", "", [
@@ -24,45 +25,25 @@ export default function AlarmScreen() {
         text: 'Sim',
         onPress: async () => {
           ToastAndroid.show('Alarme desativado', ToastAndroid.SHORT);
+          selectedAudio.stopAsync();
           navigation.navigate("Home")
         },
       },
     ])
   }
 
-  const getLocation = async () => {
-    try {
-      const response = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = response.coords;
-      console.log("Teste", latitude, longitude, selectedLocation.position.latitude, selectedLocation.position.longitude)
-      // const distance = Location.distanceBetweenPoints(
-      //   latitude,
-      //   longitude,
-      //   selectedLocation.position.latitude,
-      //   selectedLocation.position.longitude
-      // );
-
-      // if (distance <= (selectedLocation.position.ratio / 2)) {
-      //   console.log("Entrei na area.")
-      //   //toca o alarme
-      // } else {
-      //   console.log("Fora na area.")
-      // }
-    } catch (error) {
-      console.log(error)
-    }
-  };
-
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      // Ação que será executada a cada segundo
-      getLocation();
-    }, 1000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, []);
+    const result = getDistance(
+      { latitude: currentLocation.coords.latitude, longitude: currentLocation.coords.longitude },
+      { latitude: selectedLocation.position.latitude, longitude: selectedLocation.position.longitude }
+    );
+    if (result <= selectedLocation.ratio) {
+      selectedAudio.setIsLoopingAsync(true)
+      selectedAudio.playAsync();
+    } else {
+      selectedAudio.stopAsync();
+    }
+  }, [currentLocation]);
 
   return (
     <VStack
@@ -141,7 +122,7 @@ export default function AlarmScreen() {
           alignItems={"center"}
           _text={{ color: 'white', fontWeight: 'bold' }}
         >
-          {selectedLocation.destination}
+          {isPlaying ? 'Você está próximo do destino' : selectedLocation.destination}
         </Box>
       </Box>
 

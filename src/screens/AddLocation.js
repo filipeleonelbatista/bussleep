@@ -9,7 +9,7 @@ import * as Yup from 'yup';
 import { useLocations } from '../hooks/useLocations';
 
 export default function AddLocation() {
-  const { currentLocation, getCurrentLocation, addLocationAlarm } = useLocations();
+  const { currentLocation, addLocationAlarm } = useLocations();
 
   const { width, height } = useWindowDimensions();
   const navigation = useNavigation();
@@ -48,10 +48,6 @@ export default function AddLocation() {
 
     navigation.navigate("Home")
   }
-
-  useEffect(() => {
-    getCurrentLocation();
-  }, [])
 
   return (
     <VStack
