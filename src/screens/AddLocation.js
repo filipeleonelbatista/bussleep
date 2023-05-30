@@ -2,11 +2,17 @@ import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useFormik } from 'formik';
 import { Box, Button, FormControl, HStack, Input, ScrollView, Slider, VStack, WarningOutlineIcon } from 'native-base';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
-import MapView, { Circle, Marker } from 'react-native-maps';
 import * as Yup from 'yup';
 import { useLocations } from '../hooks/useLocations';
+
+import Mapbox from '@rnmapbox/maps';
+import circle from '@turf/circle';
+
+Mapbox.setAccessToken('pk.eyJ1IjoiZmlsaXBlbGVvbmVsYmF0aXN0YSIsImEiOiJjbDA5dWF5YXIwZ3oxM2tudDhsajBoY3M4In0.RYxLDG-hEGzrglaAPykBxw');
+
+var options = { steps: 100, units: 'kilometers', properties: { foo: 'bar' } };
 
 export default function AddLocation() {
   const { currentLocation, addLocationAlarm } = useLocations();
@@ -79,7 +85,7 @@ export default function AddLocation() {
         </Button>
       </HStack>
 
-      <ScrollView paddingHorizontal={24} paddingVertical={24} marginBottom={6}>
+      <VStack paddingHorizontal={24} paddingVertical={24} marginBottom={6}>
         <FormControl isInvalid={!!formik.errors.destination} w="100%">
           <FormControl.Label>Destino</FormControl.Label>
           <Input
@@ -126,39 +132,56 @@ export default function AddLocation() {
               </FormControl.ErrorMessage>
             )}
             <Box width={width * 0.85} height={width * 0.85}>
-              <MapView
-                showsUserLocation
-                showsPointsOfInterest={false}
+
+              <Mapbox.MapView
+                id="map"
+                scaleBarEnabled={false}
                 style={{
                   width: width * 0.85,
                   height: width * 0.85,
                   borderRadius: 16,
                 }}
-                initialRegion={{
-                  latitude: currentLocation.coords.latitude,
-                  longitude: currentLocation.coords.longitude,
-                  latitudeDelta: 0.0154,
-                  longitudeDelta: 0.0178,
+                styleURL={Mapbox.StyleURL.Street}
+                onMapIdle={(region) => {
+                  formik.setFieldValue("position", { latitude: region.properties.center[1], longitude: region.properties.center[0] })
                 }}
-                onRegionChangeComplete={(region) => formik.setFieldValue("position", { latitude: region.latitude, longitude: region.longitude })}
               >
-                <Circle
-                  fillColor='#00000066'
-                  strokeColor='#000000'
-                  strokeWidth={3}
-                  radius={formik.values.ratio}
-                  center={{
-                    latitude: formik.values.position.latitude,
-                    longitude: formik.values.position.longitude,
-                  }}
+                <Mapbox.Camera
+                  animationMode="flyTo"
+                  animationDuration={2000}
+                  centerCoordinate={[formik.values.position.longitude, formik.values.position.latitude]}
                 />
-                <Marker
-                  coordinate={{
-                    latitude: formik.values.position.latitude,
-                    longitude: formik.values.position.longitude,
-                  }}
+                <Mapbox.UserLocation
+                  animated
+                  showsUserHeadingIndicator
+                  visible={true}
                 />
-              </MapView>
+                <Mapbox.PointAnnotation
+                  id="my_location"
+                  title="Your location"
+                  aboveLayerID="routeSource"
+                  coordinate={[formik.values.position.longitude, formik.values.position.latitude]}
+                />
+                <Mapbox.ShapeSource
+                  id='routeSource'
+                  shape={
+                    circle([formik.values.position.longitude, formik.values.position.latitude], formik.values.ratio / 1000, options)
+                  }
+                >
+                  <Mapbox.FillLayer
+                    id="radiusFill"
+                    style={{ fillColor: 'rgba(0, 0, 0, 0.3)' }}
+                  />
+                  <Mapbox.LineLayer
+                    id="radiusOutline"
+                    style={{
+                      lineColor: '#000000',
+                      lineWidth: 3,
+                    }}
+                    aboveLayerID="radiusFill"
+                  />
+                </Mapbox.ShapeSource>
+              </Mapbox.MapView>
             </Box>
 
           </FormControl>
@@ -180,7 +203,7 @@ export default function AddLocation() {
         >
           Salvar
         </Button>
-      </ScrollView>
+      </VStack>
 
     </VStack>
   )

@@ -2,10 +2,16 @@ import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { getDistance } from 'geolib';
 import { Box, Button, HStack, VStack } from 'native-base';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, ToastAndroid, useWindowDimensions } from 'react-native';
-import MapView, { Circle, Marker } from 'react-native-maps';
 import { useLocations } from '../hooks/useLocations';
+
+import Mapbox from '@rnmapbox/maps';
+import circle from '@turf/circle';
+
+Mapbox.setAccessToken('pk.eyJ1IjoiZmlsaXBlbGVvbmVsYmF0aXN0YSIsImEiOiJjbDA5dWF5YXIwZ3oxM2tudDhsajBoY3M4In0.RYxLDG-hEGzrglaAPykBxw');
+
+var options = { steps: 100, units: 'kilometers', properties: { foo: 'bar' } };
 
 export default function AlarmScreen() {
   const { width, height } = useWindowDimensions();
@@ -76,35 +82,47 @@ export default function AlarmScreen() {
         </Button>
       </HStack>
 
-      <MapView
-        showsUserLocation
+      <Mapbox.MapView
+        id="map"
+        scaleBarEnabled={false}
         style={{
           flex: 1,
         }}
-        initialRegion={{
-          latitude: selectedLocation.position.latitude,
-          longitude: selectedLocation.position.longitude,
-          latitudeDelta: 0.0154,
-          longitudeDelta: 0.0178,
-        }}
+        styleURL={Mapbox.StyleURL.Street}
       >
-        <Circle
-          fillColor='#00000066'
-          strokeColor='#000000'
-          strokeWidth={3}
-          radius={selectedLocation.ratio}
-          center={{
-            latitude: selectedLocation.position.latitude,
-            longitude: selectedLocation.position.longitude,
-          }}
+        <Mapbox.Camera
+          animationMode="flyTo"
+          animationDuration={2000}
+          zoomLevel={15}
+          centerCoordinate={[selectedLocation.position.longitude, selectedLocation.position.latitude]}
         />
-        <Marker
-          coordinate={{
-            latitude: selectedLocation.position.latitude,
-            longitude: selectedLocation.position.longitude,
-          }}
+        <Mapbox.UserLocation visible={true} />
+        <Mapbox.PointAnnotation
+          id="my_location"
+          title="Your location"
+          aboveLayerID="routeSource"
+          coordinate={[selectedLocation.position.longitude, selectedLocation.position.latitude]}
         />
-      </MapView>
+        <Mapbox.ShapeSource
+          id='routeSource'
+          shape={
+            circle([selectedLocation.position.longitude, selectedLocation.position.latitude], selectedLocation.ratio / 1000, options)
+          }
+        >
+          <Mapbox.FillLayer
+            id="radiusFill"
+            style={{ fillColor: 'rgba(0, 0, 0, 0.3)' }}
+          />
+          <Mapbox.LineLayer
+            id="radiusOutline"
+            style={{
+              lineColor: '#000000',
+              lineWidth: 3,
+            }}
+            aboveLayerID="radiusFill"
+          />
+        </Mapbox.ShapeSource>
+      </Mapbox.MapView>
 
       <Box
         position={"absolute"}

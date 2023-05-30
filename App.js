@@ -1,3 +1,5 @@
+import 'expo-dev-client';
+import 'react-native-gesture-handler';
 import { NativeBaseProvider, StatusBar } from "native-base";
 import React from "react";
 import Router from './Router'

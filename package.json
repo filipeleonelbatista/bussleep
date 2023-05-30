@@ -4,18 +4,22 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
+    "start:dev": "expo start --dev-client",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build:apk": "eas build -p android --profile preview",
     "build:store": "eas build -p android --profile production",
-    "start:emulator": "emulator -avd Pixel_2_API_33"
+    "start:emulator": "emulator -avd Pixel_2_API_33",
+    "build:dev": "eas build --profile development-simulator --platform android"
   },
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",
     "@react-native-async-storage/async-storage": "^1.18.1",
     "@react-navigation/native": "^6.1.6",
     "@react-navigation/stack": "^6.3.16",
+    "@rnmapbox/maps": "^10.0.7-rc.1",
+    "@turf/circle": "^6.5.0",
     "expo": "~48.0.15",
     "expo-av": "~13.2.1",
     "expo-location": "~15.1.1",
@@ -30,7 +34,10 @@
     "react-native-screens": "~3.20.0",
     "react-native-svg": "13.4.0",
     "react-native-uuid": "^2.0.1",
-    "yup": "^1.1.1"
+    "yup": "^1.1.1",
+    "expo-dev-client": "~2.2.1",
+    "react-native-gesture-handler": "~2.9.0",
+    "react-native-reanimated": "~2.14.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

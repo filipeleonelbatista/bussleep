@@ -6,6 +6,13 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Permitir que o app $(PRODUCT_NAME) use sua localização."
         }
+      ],
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsImpl": "mapbox",
+          "RNMapboxMapsDownloadToken": "sk.eyJ1IjoiZmlsaXBlbGVvbmVsYmF0aXN0YSIsImEiOiJjbGlhYjNhN2IwMWxnM2RwZjE2aTV6eW93In0.yEkCUYM9jf-xhfPH-AuvAA"
+        }
       ]
     ],
     "updates": {
