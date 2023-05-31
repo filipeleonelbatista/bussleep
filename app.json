@@ -20,7 +20,7 @@
     },
     "name": "BusSleep",
     "slug": "bussleep",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -35,7 +35,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bussleep.br",
-      "buildNumber": "1.0.0"
+      "buildNumber": "1.0.1"
     },
     "android": {
       "permissions": [
@@ -58,7 +58,7 @@
         "backgroundColor": "#000000"
       },
       "package": "com.bussleep.br",
-      "versionCode": 132
+      "versionCode": 101
     },
     "web": {
       "favicon": "./assets/favicon.png"

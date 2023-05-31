@@ -2,12 +2,14 @@ import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { getDistance } from 'geolib';
 import { Box, Button, HStack, VStack } from 'native-base';
-import { useEffect, useState } from 'react';
-import { Alert, ToastAndroid, useWindowDimensions } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Alert, ToastAndroid, View, useWindowDimensions } from 'react-native';
 import { useLocations } from '../hooks/useLocations';
 
 import Mapbox from '@rnmapbox/maps';
 import circle from '@turf/circle';
+import midpoint from '@turf/midpoint';
+import distance from '@turf/distance';
 
 Mapbox.setAccessToken('pk.eyJ1IjoiZmlsaXBlbGVvbmVsYmF0aXN0YSIsImEiOiJjbDA5dWF5YXIwZ3oxM2tudDhsajBoY3M4In0.RYxLDG-hEGzrglaAPykBxw');
 
@@ -19,6 +21,33 @@ export default function AlarmScreen() {
 
   const { selectedLocation, currentLocation, selectedAudio } = useLocations();
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const centralizedCamera = useMemo(() => {
+    return midpoint([currentLocation?.coords?.longitude, currentLocation?.coords?.latitude],
+      [selectedLocation?.position?.longitude, selectedLocation?.position?.latitude])
+  }, [currentLocation])
+
+  const desiredZoom = useMemo(() => {
+    const dist = distance([currentLocation?.coords?.longitude, currentLocation?.coords?.latitude],
+      [selectedLocation?.position?.longitude, selectedLocation?.position?.latitude], { units: 'kilometers' })
+    let zoomLevel;
+
+    if (dist <= 0.2) {
+      zoomLevel = 17
+    } else if (dist <= 0.5) {
+      zoomLevel = 16
+    } else if (dist <= 1) {
+      zoomLevel = 15; // Zoom de nível 15 para distâncias menores ou iguais a 1 km
+    } else if (dist <= 2) {
+      zoomLevel = 14; // Zoom de nível 12 para distâncias entre 1 e 2 km
+    } else if (dist <= 5) {
+      zoomLevel = 12; // Zoom de nível 12 para distâncias entre 2 e 5 km
+    } else {
+      zoomLevel = 10; // Zoom de nível 10 para distâncias maiores que 5 km
+    }
+
+    return zoomLevel;
+  }, [currentLocation])
 
   const handleDisabledAlarm = () => {
     Alert.alert("Deseja desativar este alarme?", "", [
@@ -45,8 +74,10 @@ export default function AlarmScreen() {
     );
     if (result <= selectedLocation.ratio) {
       selectedAudio.setIsLoopingAsync(true)
+      setIsPlaying(true)
       selectedAudio.playAsync();
     } else {
+      setIsPlaying(false)
       selectedAudio.stopAsync();
     }
   }, [currentLocation]);
@@ -93,13 +124,42 @@ export default function AlarmScreen() {
         <Mapbox.Camera
           animationMode="flyTo"
           animationDuration={2000}
-          zoomLevel={15}
-          centerCoordinate={[selectedLocation.position.longitude, selectedLocation.position.latitude]}
+          zoomLevel={desiredZoom}
+          centerCoordinate={centralizedCamera.geometry.coordinates}
         />
-        <Mapbox.UserLocation visible={true} />
+        {
+          currentLocation?.coords && (
+            <Mapbox.PointAnnotation
+              id="selected_location"
+              aboveLayerID="routeSource"
+              coordinate={[currentLocation?.coords?.longitude, currentLocation?.coords?.latitude]}
+            >
+              <View
+                style={{
+                  height: 25,
+                  width: 25,
+                  backgroundColor: '#4286f5',
+                  borderRadius: 50,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <View style={{
+                  height: 20,
+                  width: 20,
+                  backgroundColor: '#4286f5',
+                  borderRadius: 50,
+                  borderColor: '#fff',
+                  borderWidth: 3
+                }} />
+              </View>
+            </Mapbox.PointAnnotation>
+          )
+        }
         <Mapbox.PointAnnotation
           id="my_location"
-          title="Your location"
+          title="Your destination"
           aboveLayerID="routeSource"
           coordinate={[selectedLocation.position.longitude, selectedLocation.position.latitude]}
         />

@@ -1,14 +1,33 @@
-import { Box, Button, HStack, Text } from 'native-base';
-import { useLocations } from '../hooks/useLocations';
 import { useNavigation } from '@react-navigation/native';
 import Mapbox from '@rnmapbox/maps';
 import circle from '@turf/circle';
+import { Box, Button, HStack, Text } from 'native-base';
+import { useMemo } from 'react';
+import { useLocations } from '../hooks/useLocations';
 
 Mapbox.setAccessToken('pk.eyJ1IjoiZmlsaXBlbGVvbmVsYmF0aXN0YSIsImEiOiJjbDA5dWF5YXIwZ3oxM2tudDhsajBoY3M4In0.RYxLDG-hEGzrglaAPykBxw');
 
 var options = { steps: 100, units: 'kilometers', properties: { foo: 'bar' } };
 
 export default function AlarmItem({ item, ...props }) {
+
+  const desiredZoom = useMemo(() => {
+    const dist = item.ratio / 1000
+    let zoomLevel;
+
+    if (dist <= 1) {
+      zoomLevel = 14; // Zoom de nível 15 para distâncias menores ou iguais a 1 km
+    } else if (dist <= 2) {
+      zoomLevel = 13; // Zoom de nível 12 para distâncias entre 1 e 2 km
+    } else if (dist <= 5) {
+      zoomLevel = 11; // Zoom de nível 12 para distâncias entre 2 e 5 km
+    } else {
+      zoomLevel = 10; // Zoom de nível 10 para distâncias maiores que 5 km
+    }
+
+    return zoomLevel;
+  }, [item.ratio])
+
   const navigation = useNavigation();
   const { deleteLocationAlarm, setSelectedLocation } = useLocations();
   return (
@@ -32,6 +51,11 @@ export default function AlarmItem({ item, ...props }) {
             <Mapbox.MapView
               id="map"
               scaleBarEnabled={false}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
+              logoEnabled={false}
               style={{
                 width: '100%',
                 height: 130,
@@ -41,7 +65,7 @@ export default function AlarmItem({ item, ...props }) {
               <Mapbox.Camera
                 animationMode="flyTo"
                 animationDuration={2000}
-                zoomLevel={13}
+                zoomLevel={desiredZoom}
                 centerCoordinate={[item?.position?.longitude, item?.position?.latitude]}
               />
               <Mapbox.PointAnnotation
@@ -55,6 +79,9 @@ export default function AlarmItem({ item, ...props }) {
                 shape={
                   circle([item?.position?.longitude, item?.position?.latitude], item.ratio / 1000, options)
                 }
+                aboveLayerID="radiusOutline"
+                belowLayerID="my_location"
+                
               >
                 <Mapbox.FillLayer
                   id="radiusFill"

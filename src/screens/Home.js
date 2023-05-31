@@ -5,6 +5,7 @@ import EmptyMessage from '../components/EmptyMessage';
 import { useNavigation } from '@react-navigation/native';
 import { useLocations } from '../hooks/useLocations';
 import AlarmItem from '../components/AlarmItem';
+import Constants from 'expo-constants';
 
 export default function Home() {
   const { width, height } = useWindowDimensions();
@@ -43,13 +44,16 @@ export default function Home() {
       </HStack>
       <ScrollView
         paddingHorizontal={16}
-        paddingVertical={16}
       >
         {
           LocationsList.length === 0 ? <EmptyMessage /> : (
             LocationsList.map((item, index) => (<AlarmItem key={index} item={item} />))
           )
         }
+        <VStack alignItems={'center'} p={8}>
+          <Text>Versão {Constants.manifest.version}</Text>
+          <Text>Desenvolvido por Filipe Batista</Text>
+        </VStack>
       </ScrollView>
       <Button
         position={"absolute"}
