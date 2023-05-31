@@ -34,7 +34,7 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.bussleep.br",
+      "bundleIdentifier": "bussleep.br",
       "buildNumber": "1.0.1"
     },
     "android": {
@@ -57,7 +57,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.bussleep.br",
+      "package": "bussleep.br",
       "versionCode": 101
     },
     "web": {
